@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>El Lucero de Manuel | Menú Digital</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+    <header>
+        <img src="assets/imagenes/logo.png"
+             alt="El Lucero de Manuel"
+             width="220">
+
+        <h1>El Lucero de Manuel</h1>
+        <p>Hamburguesas y Snacks</p>
+    </header>
+
+   
+<main>
+    <h2>Nuestro Menú</h2>
+    <p>¡Bienvenido! Elige tus favoritos.</p>
+
+    
+<section
+    class="contenedor-productos"
+    id="lista-productos">
+</section>
+
+<!-- CARRITO DE COMPRAS -->
+
+<section class="seccion-carrito">
+
+    <h2>🛒 Tu carrito</h2>
+
+    <div id="carrito-productos">
+        <p>Tu carrito está vacío.</p>
+    </div>
+
+    <div class="carrito-total">
+        <h3>
+            Total:
+            <span id="total-carrito">
+                $0.00 MXN
+            </span>
+        </h3>
+    </div>
+
+    <button
+        id="btn-vaciar"
+        type="button">
+        Vaciar carrito
+    </button>
+
+</section>
+
+
+<!-- DATOS DEL PEDIDO -->
+
+<section class="seccion-pedido" id="seccion-pedido">
+
+    <h2>📋 Datos de tu pedido</h2>
+
+    <form id="formulario-pedido">
+
+        <div class="campo-pedido">
+            <label for="nombre-cliente">
+                Nombre del cliente *
+            </label>
+
+            <input
+                type="text"
+                id="nombre-cliente"
+                placeholder="Ej. Carlos"
+                maxlength="80"
+                required
+            >
+        </div>
+
+        <div class="campo-pedido">
+
+            <label for="tipo-entrega">
+                ¿Dónde deseas recibir tu pedido? *
+            </label>
+
+            <select id="tipo-entrega" required>
+                <option value="mostrador">
+                    Recoger en mostrador
+                </option>
+
+                <option value="local">
+                    Entrega en local
+                </option>
+            </select>
+
+        </div>
+
+        <div
+            class="campo-pedido"
+            id="campo-local"
+            hidden
+        >
+
+            <label for="nombre-local">
+                Número o nombre del local *
+            </label>
+
+            <input
+                type="text"
+                id="nombre-local"
+                placeholder="Ej. Local 15 o Abarrotes Lupita"
+                maxlength="100"
+            >
+
+        </div>
+
+        <button type="submit" id="btn-confirmar-pedido">
+            Revisar mi pedido
+        </button>
+
+    </form>
+
+</section>
+
+
+</main>
+
+
+    <script src="js/menu.js"></script>
+    <script type="module" src="js/firebase-config.js"></script>
+    <script type="module" src="js/estado-negocio.js"></script>
+
+</body>
+</html>

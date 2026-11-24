@@ -1,0 +1,118 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Administración | El Lucero de Manuel</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+    <main class="panel-admin" hidden>
+
+        <header class="encabezado-admin">
+
+            <img
+                src="assets/imagenes/logo.png"
+                alt="El Lucero de Manuel"
+                class="logo-admin"
+            >
+
+            <h1>Panel de administración</h1>
+
+            <p>El Lucero de Manuel</p>
+
+            <button type="button" id="btn-cerrar-sesion">
+                🚪 Cerrar sesión
+            </button>
+
+
+        </header>
+
+<section class="control-negocio">
+
+    <h2>Estado del negocio</h2>
+
+    <p id="mensaje-estado-admin">
+        Consultando disponibilidad...
+    </p>
+
+    <button
+        type="button"
+        id="btn-cambiar-estado"
+        disabled
+    >
+        Próximamente
+    </button>
+
+</section>
+
+        <section class="modulos-admin">
+
+            
+            <div class="modulo-admin">
+                    <div class="icono-modulo">📋</div>
+
+                <h2>Pedidos</h2>
+
+                <p>Consultar y actualizar pedidos</p>
+
+                <a href="pedidos.html" class="boton-modulo">
+                     Ver pedidos
+                    </a>
+                </div>
+
+                <div class="modulo-admin">
+             <div class="icono-modulo">🍔</div>
+                    <h2>Menú</h2>
+                <p>Administrar productos y precios</p>
+                <a href="productos.html" class="boton-modulo">
+                     Administrar menú
+                    </a>
+            </div>
+        
+            <div class="modulo-admin">
+                 <div class="icono-modulo">🛒</div>
+                <h2>Venta en mostrador</h2>
+                <p>Registrar pedidos y ventas presenciales</p>
+                <a href="mostrador.html" class="boton-modulo">
+                         Nueva venta
+                </a>
+            </div>
+            <div class="modulo-admin">
+                <div class="icono-modulo">💰</div>
+                <h2>Caja</h2>
+                <p>Consultar ventas y cortes de caja</p>
+                <a href="caja.html" class="boton-modulo">
+                     Ver Caja
+                    </a>
+                </button>
+                
+            </div>
+
+            <div class="modulo-admin">
+                <div class="icono-modulo">👥</div>
+                <h2>Personal</h2>
+                <p>Administrar trabajadores y permisos</p>
+                <button type="button" disabled>
+                    Próximamente
+                </button>
+            </div>
+            
+        </section>
+
+        <p class="aviso-admin">
+            Panel en construcción.
+            Las funciones administrativas todavía no están habilitadas.
+        </p>
+
+    </main>
+<script type="module" src="js/admin.js"></script>
+</body>
+</html>

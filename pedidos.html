@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Pedidos | El Lucero de Manuel</title>
+
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+    <main class="pagina-pedidos" hidden>
+
+        <header class="encabezado-pedidos">
+
+            <img
+                src="assets/imagenes/logo.png"
+                alt="El Lucero de Manuel"
+                class="logo-pedidos"
+            >
+
+            <h1>Pedidos del día</h1>
+
+            <p>Control de pedidos - El Lucero de Manuel</p>
+
+            <a href="admin.html" class="volver-admin">
+                ← Volver al panel
+            </a>
+
+        </header>
+
+        <section class="contenedor-pedidos">
+
+            <h2>Pedidos recibidos</h2>
+
+            <p class="descripcion-pedidos">
+                Aquí aparecerán los pedidos realizados
+                por nuestros clientes.
+            </p>
+
+            <div id="lista-pedidos">
+
+                <!-- Ejemplo visual, no es un pedido real -->
+
+                <article class="tarjeta-pedido">
+
+                    <div class="cabecera-pedido">
+                        <h3>Pedido #1</h3>
+                        <span class="estado-pedido">
+                            Pendiente
+                        </span>
+                    </div>
+
+                    <p><strong>Cliente:</strong> Carlos</p>
+
+                    <p>
+                        <strong>Entrega:</strong>
+                        Recoger en mostrador
+                    </p>
+
+                    <hr>
+
+                    <h4>Productos</h4>
+
+                    <p>🍔 1 Hamburguesa hawaiana - $75</p>
+                    <p class="detalle-ingrediente">
+                        Sin cebolla
+                    </p>
+
+                    <p>🌭 1 Hot dog - $40</p>
+
+                    <hr>
+
+                    <p class="total-pedido">
+                        Total: $115 MXN
+                    </p>
+
+                    <p class="aviso-ejemplo">
+                        Pedido de ejemplo para probar el diseño.
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Protección del acceso antes de mostrar el contenido -->
+    <script type="module" src="js/pedidos.js"></script>
+
+</body>
+</html>

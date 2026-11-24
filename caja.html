@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Caja | El Lucero de Manuel</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+    <main class="pagina-pedidos" hidden>
+
+        <header class="encabezado-pedidos">
+            <img src="assets/imagenes/logo.png"
+                 alt="El Lucero de Manuel"
+                 class="logo-pedidos">
+
+            <h1>💰 Corte de caja</h1>
+            <p>Control financiero - El Lucero de Manuel</p>
+
+            <a href="admin.html" class="volver-admin">
+                ← Volver al panel
+            </a>
+        </header>
+
+        <section class="contenedor-caja">
+
+            <p id="mensaje-caja" role="status">
+                Consultando caja...
+            </p>
+
+            <div id="resumen-caja"></div>
+
+            <div id="apertura-caja"></div>
+
+            <div id="movimientos-caja"></div>
+
+            <div id="conciliacion-caja"></div>
+
+            <div id="corte-realizado"></div>
+
+        </section>
+
+    </main>
+
+    <script type="module" src="js/caja.js"></script>
+
+</body>
+</html>

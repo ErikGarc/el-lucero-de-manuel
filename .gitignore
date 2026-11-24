@@ -1,0 +1,28 @@
+# Cloudflare
+.wrangler/
+.dev.vars
+.dev.vars.*
+
+# Variables privadas
+.env
+.env.*
+
+# Bases de datos y respaldos
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# Dependencias
+node_modules/
+
+# Credenciales privadas
+*serviceAccount*.json
+*service-account*.json
+*.pem
+*.key
+
+# Archivos temporales
+*.log
+.DS_Store
+Thumbs.db

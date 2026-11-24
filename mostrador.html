@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>Mostrador | El Lucero de Manuel</title>
+    <link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+
+    <main class="pagina-pedidos" id="pagina-mostrador" hidden>
+
+        <header class="encabezado-pedidos">
+            <img src="assets/imagenes/logo.png"
+                 alt="El Lucero de Manuel"
+                 class="logo-pedidos">
+
+            <h1>Venta en mostrador</h1>
+            <p>El Lucero de Manuel</p>
+
+            <a href="admin.html" class="volver-admin">
+                ← Volver al panel
+            </a>
+        </header>
+
+        <section id="contenedor-mostrador">
+
+            <section id="catalogo-mostrador">
+                <h2>Seleccionar productos</h2>
+                <p id="mensaje-mostrador" role="status">
+                    Consultando productos...
+                </p>
+                <div id="productos-mostrador"></div>
+            </section>
+
+            <section id="orden-mostrador">
+
+                <h2>Orden actual</h2>
+
+                <div id="carrito-mostrador"></div>
+
+                <h3>Total: <span id="total-mostrador">
+                    $0.00
+                </span></h3>
+
+                <form id="form-venta-mostrador">
+
+                    <label for="cliente-mostrador">
+                        Nombre del cliente (opcional)
+                    </label>
+
+                    <input type="text"
+                           id="cliente-mostrador"
+                           maxlength="80"
+                           placeholder="Cliente mostrador">
+
+                    <label for="pago-mostrador">
+                        Método de pago
+                    </label>
+
+                    <select id="pago-mostrador" required>
+                        <option value="">
+                            Seleccionar método
+                        </option>
+                        <option value="efectivo">
+                            Efectivo
+                        </option>
+                        <option value="transferencia">
+                            Transferencia
+                        </option>
+                    </select>
+
+                    <div id="seccion-efectivo" hidden>
+
+                        <label for="efectivo-recibido">
+                            Efectivo recibido
+                        </label>
+
+                        <input type="number"
+                               id="efectivo-recibido"
+                               min="0"
+                               step="0.01">
+
+                        <p>Cambio:
+                            <strong id="cambio-mostrador">
+                                $0.00
+                            </strong>
+                        </p>
+
+                    </div>
+
+                    <button type="submit"
+                            id="btn-registrar-venta"
+                            class="boton-modulo"
+                            disabled>
+                        Registrar venta
+                    </button>
+
+                    <button type="button"
+                            id="btn-vaciar-orden">
+                        Vaciar orden
+                    </button>
+
+                </form>
+
+            </section>
+
+        </section>
+
+        <dialog id="modal-mostrador">
+
+            <h2 id="titulo-personalizacion"></h2>
+
+            <p>Personalizar ingredientes</p>
+
+            <div id="ingredientes-mostrador"></div>
+
+            <button type="button"
+                    id="btn-confirmar-producto">
+                Agregar a la orden
+            </button>
+
+            <button type="button"
+                    id="btn-cancelar-personalizacion">
+                Cancelar
+            </button>
+
+        </dialog>
+
+    </main>
+
+    <script type="module" src="js/mostrador.js"></script>
+
+</body>
+</html>
