@@ -21,8 +21,16 @@ let productos = [];
 
 function iconoProducto(nombre) {
     const texto = nombre.toLowerCase();
+
+    if (/combo|promoci[oó]n/.test(texto)) return "🍔🍟";
     if (texto.includes("hamburguesa")) return "🍔";
     if (/hot[ -]?dog/.test(texto)) return "🌭";
+    if (texto.includes("alitas")) return "🍗";
+    if (/boneless|boneles/.test(texto)) return "🍗";
+    if (texto.includes("papas")) return "🍟";
+    if (texto.includes("refresco")) return "🥤";
+    if (texto.includes("sincronizada")) return "🧀";
+
     return "🍽️";
 }
 
@@ -34,6 +42,9 @@ async function consultarMenuAPI() {
         if (!Array.isArray(datos.productos)) {
             throw new Error("El menú recibido no es válido.");
         }
+        if (datos.productos.some(p => !Number.isInteger(p.opciones_minimas) || !Number.isInteger(p.opciones_maximas) || !Array.isArray(p.ingredientes) || p.ingredientes.some(i => typeof i.esOpcion !== "boolean"))) {
+            throw new Error("El catálogo no incluye la configuración de opciones.");
+        }
         productos = datos.productos.map(p => ({
             id: String(p.id),
             nombre: p.nombre,
@@ -41,8 +52,11 @@ async function consultarMenuAPI() {
             precio: Number(p.precio),
             imagen: iconoProducto(p.nombre),
             disponible: p.disponible === true,
+            opcionesMinimas: p.opciones_minimas,
+            opcionesMaximas: p.opciones_maximas,
+            opciones: p.ingredientes.filter(i => i.disponible === true && i.esOpcion === true).map(i => i.nombre),
             ingredientes: Array.isArray(p.ingredientes)
-                ? p.ingredientes.filter(i => i.disponible === true && i.sePuedeQuitar === true)
+                ? p.ingredientes.filter(i => i.disponible === true && i.sePuedeQuitar === true && !i.esOpcion)
                     .map(i => i.nombre)
                 : []
         }));
@@ -57,7 +71,7 @@ async function consultarMenuAPI() {
     }
 }
 
-// Cada elemento será una unidad individual.
+// Cada elemento representa una configuración y su cantidad.
 let carrito = [];
 let siguienteId = 1;
 let pedidoConfirmado = false;
@@ -144,7 +158,7 @@ function abrirPersonalizacion(id) {
     productoSeleccionado =
         productos.find(p => p.id === id);
 
-    if (!productoSeleccionado) return;
+    if (!productoSeleccionado || enviandoPedido || pedidoConfirmado) return;
 
     modal.innerHTML = "";
 
@@ -176,6 +190,34 @@ function abrirPersonalizacion(id) {
         lista.appendChild(etiqueta);
     });
 
+    const opciones = document.createElement("div");
+    opciones.className = "lista-ingredientes";
+    const p = productoSeleccionado;
+    const aviso = document.createElement("p");
+    if (p.opcionesMaximas > 0) {
+        aviso.textContent = `Elige de ${p.opcionesMinimas} a ${p.opcionesMaximas} opciones por orden (sin costo adicional).`;
+        for (const opcion of p.opciones) {
+            const etiqueta = document.createElement("label");
+            etiqueta.className = "ingrediente-opcion";
+            const casilla = document.createElement("input");
+            casilla.type = p.opcionesMaximas === 1 && p.opcionesMinimas === 1 ? "radio" : "checkbox";
+            casilla.name = "opciones-producto";
+            casilla.value = opcion;
+            etiqueta.append(casilla, document.createTextNode(opcion));
+            opciones.append(etiqueta);
+        }
+    }
+    let cantidad = 1;
+    const cantidadTitulo = document.createElement("p");
+    cantidadTitulo.textContent = "Cantidad de órdenes (misma personalización)";
+    const selector = document.createElement("div");
+    selector.className = "modal-acciones";
+    const menos = document.createElement("button");
+    menos.type = "button"; menos.textContent = "−"; menos.setAttribute("aria-label", "Disminuir cantidad");
+    const numero = document.createElement("strong");
+    const mas = document.createElement("button");
+    mas.type = "button"; mas.textContent = "+"; mas.setAttribute("aria-label", "Aumentar cantidad");
+    selector.append(menos, numero, mas);
     const precio = document.createElement("p");
     precio.className = "precio";
     precio.textContent =
@@ -196,32 +238,40 @@ function abrirPersonalizacion(id) {
     agregar.textContent = "Agregar al carrito";
     agregar.className = "btn-confirmar";
 
-    agregar.addEventListener("click", () => {
-        const ingredientesQuitados = Array.from(
-            lista.querySelectorAll("input:checked")
-        ).map(input => input.value);
-
-        carrito.push({
-            idCarrito: siguienteId++,
-            idProducto: productoSeleccionado.id,
-            nombre: productoSeleccionado.nombre,
-            precio: productoSeleccionado.precio,
-            ingredientesQuitados
+    function actualizar() {
+        const elegidas = opciones.querySelectorAll("input:checked").length;
+        opciones.querySelectorAll('input[type="checkbox"]').forEach(c => {
+            c.disabled = !c.checked && elegidas >= p.opcionesMaximas;
         });
-
+        agregar.disabled = elegidas < p.opcionesMinimas || elegidas > p.opcionesMaximas;
+        numero.textContent = String(cantidad);
+        menos.disabled = cantidad <= 1;
+        mas.disabled = cantidad >= 20;
+        precio.textContent = `Subtotal: $${(p.precio * cantidad).toFixed(2)} MXN`;
+    }
+    menos.addEventListener("click", () => { if (cantidad > 1) cantidad--; actualizar(); });
+    mas.addEventListener("click", () => { if (cantidad < 20) cantidad++; actualizar(); });
+    opciones.addEventListener("change", actualizar);
+    agregar.addEventListener("click", () => {
+        if (enviandoPedido || pedidoConfirmado) return;
+        const ingredientesQuitados = Array.from(lista.querySelectorAll("input:checked"), i => i.value).sort();
+        const opcionesElegidas = Array.from(opciones.querySelectorAll("input:checked"), i => i.value).sort();
+        if (opcionesElegidas.length < p.opcionesMinimas || opcionesElegidas.length > p.opcionesMaximas) return;
+        const clave = JSON.stringify([p.id, ingredientesQuitados, opcionesElegidas]);
+        const existente = carrito.find(i => i.clave === clave);
+        if ((existente?.cantidad || 0) + cantidad > 20) return alert("Máximo 20 órdenes por personalización.");
+        if (!existente && carrito.length >= 30) return alert("Máximo 30 configuraciones por pedido.");
+        if (existente) existente.cantidad += cantidad;
+        else carrito.push({idCarrito: siguienteId++, clave, idProducto: p.id, nombre: p.nombre, precio: p.precio, cantidad, ingredientesQuitados, opcionesElegidas});
         mostrarCarrito();
         cerrarModal();
     });
-
     acciones.append(cancelar, agregar);
-
-    contenido.append(
-        titulo,
-        instrucciones,
-        lista,
-        precio,
-        acciones
-    );
+    contenido.append(titulo);
+    if (p.ingredientes.length) contenido.append(instrucciones, lista);
+    if (p.opcionesMaximas > 0) contenido.append(aviso, opciones);
+    contenido.append(cantidadTitulo, selector, precio, acciones);
+    actualizar();
 
     modal.appendChild(contenido);
     modal.hidden = false;
@@ -231,6 +281,13 @@ function cerrarModal() {
     modal.hidden = true;
     modal.innerHTML = "";
     productoSeleccionado = null;
+}
+
+function indicacionesItem(item) {
+    const partes = [];
+    if (item.opcionesElegidas.length) partes.push("Opciones: " + item.opcionesElegidas.join(" + "));
+    if (item.ingredientesQuitados.length) partes.push("Sin: " + item.ingredientesQuitados.join(", "));
+    return partes.join(" · ") || "Completo";
 }
 
 // MOSTRAR CARRITO
@@ -259,7 +316,7 @@ function mostrarCarrito() {
     }
 
     carrito.forEach(item => {
-        total += item.precio;
+        total += Math.round(item.precio * 100) * item.cantidad / 100;
 
         const fila = document.createElement("div");
         fila.className = "item-carrito";
@@ -268,20 +325,18 @@ function mostrarCarrito() {
         detalle.className = "detalle-carrito";
 
         const nombre = document.createElement("strong");
-        nombre.textContent = item.nombre;
+        nombre.textContent = `${item.cantidad} × ${item.nombre}`;
 
         const indicaciones = document.createElement("small");
 
         indicaciones.textContent =
-            item.ingredientesQuitados.length > 0
-                ? "Sin: " + item.ingredientesQuitados.join(", ")
-                : "Completo";
+            indicacionesItem(item);
 
         detalle.append(nombre, indicaciones);
 
         const precio = document.createElement("span");
         precio.textContent =
-            `$${item.precio.toFixed(2)} MXN`;
+            `$${(item.precio * item.cantidad).toFixed(2)} MXN`;
 
         const eliminar = document.createElement("button");
         eliminar.type = "button";
@@ -289,6 +344,7 @@ function mostrarCarrito() {
         eliminar.textContent = "Eliminar";
 
         eliminar.addEventListener("click", () => {
+            if (enviandoPedido || pedidoConfirmado) return;
             carrito = carrito.filter(
                 p => p.idCarrito !== item.idCarrito
             );
@@ -306,6 +362,7 @@ function mostrarCarrito() {
 // VACIAR CARRITO
 
 btnVaciar.addEventListener("click", () => {
+    if (enviandoPedido || pedidoConfirmado) return;
     carrito = [];
     mostrarCarrito();
 });
@@ -359,7 +416,7 @@ tipoEntrega.addEventListener("change", () => {
 // =====================================
 
 const resumenPedido = document.createElement("section");
-resumenPedido.className = "seccion-pedido";
+resumenPedido.className = "seccion-pedido resumen-confirmacion";
 resumenPedido.hidden = true;
 
 document.getElementById("seccion-pedido")
@@ -380,6 +437,7 @@ function crearTexto(etiqueta, valor) {
 
 formularioPedido.addEventListener("submit", (evento) => {
     evento.preventDefault();
+    if (enviandoPedido || pedidoConfirmado) return;
 
     // Validar que existan productos
     if (carrito.length === 0) {
@@ -451,25 +509,23 @@ formularioPedido.addEventListener("submit", (evento) => {
 
         const nombre = document.createElement("strong");
         nombre.textContent =
-            `${indice + 1}. ${item.nombre}`;
+            `${indice + 1}. ${item.cantidad} × ${item.nombre}`;
 
         const ingredientes = document.createElement("small");
 
         ingredientes.textContent =
-            item.ingredientesQuitados.length > 0
-                ? "Sin: " + item.ingredientesQuitados.join(", ")
-                : "Completo";
+            indicacionesItem(item);
 
         const precio = document.createElement("span");
         precio.textContent =
-            `$${item.precio.toFixed(2)} MXN`;
+            `$${(item.precio * item.cantidad).toFixed(2)} MXN`;
 
         detalle.append(nombre, ingredientes);
         producto.append(detalle, precio);
 
         resumenPedido.appendChild(producto);
 
-        total += item.precio;
+        total += Math.round(item.precio * 100) * item.cantidad / 100;
     });
 
     const totalElemento = document.createElement("h3");
@@ -531,17 +587,11 @@ formularioPedido.addEventListener("submit", (evento) => {
             }
 
             if (!solicitudPendienteId) solicitudPendienteId = crypto.randomUUID();
-            const unidades = new Map();
-            for (const item of carrito) {
-                const quitados = item.ingredientesQuitados || [];
-                const clave = JSON.stringify([item.idProducto, quitados]);
-                if (!unidades.has(clave)) unidades.set(clave, {
-                    id: String(item.idProducto), cantidad: 0,
-                    ingredientesQuitados: [...quitados]
-                });
-                unidades.get(clave).cantidad++;
-            }
-            const productosPedido = [...unidades.values()];
+            const productosPedido = carrito.map(item => ({
+                id: String(item.idProducto), cantidad: item.cantidad,
+                ingredientesQuitados: [...item.ingredientesQuitados],
+                opcionesElegidas: [...item.opcionesElegidas]
+            }));
             if (productosPedido.length > 30 || productosPedido.some(p => p.cantidad > 20)) {
                 throw new Error("El pedido supera el límite permitido de productos.");
             }
@@ -573,7 +623,7 @@ formularioPedido.addEventListener("submit", (evento) => {
             const tituloFinal = document.createElement("h2");
             tituloFinal.textContent = `¡Pedido #${resultado.numeroPedido} confirmado!`;
             const mensajeFinal = document.createElement("p");
-            mensajeFinal.textContent = `Gracias, ${nombreCliente}. Tu pedido de prueba fue registrado correctamente.`;
+            mensajeFinal.textContent = `¡Gracias, ${nombreCliente}! Tu pedido se realizó correctamente. Gracias por elegir El Lucero de Manuel.`;
             const totalFinal = document.createElement("h3");
             totalFinal.textContent = `Total: $${Number(resultado.total).toFixed(2)} MXN`;
             pantallaFinal.append(tituloFinal, mensajeFinal, totalFinal);

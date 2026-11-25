@@ -42,17 +42,21 @@ function boton(texto, accion) {
     return b;
 }
 function agregarIngrediente(i = {}) {
-    if (ingredientes.children.length >= 40) return alert('Máximo 40 ingredientes.');
+    if (ingredientes.children.length >= 40) return alert('Máximo 40 ingredientes y opciones.');
     const fila = elemento('div');
     const nombre = elemento('input');
     nombre.type = 'text'; nombre.required = true; nombre.maxLength = 80;
-    nombre.placeholder = 'Nombre del ingrediente'; nombre.value = i.nombre || '';
-    nombre.setAttribute('aria-label', 'Nombre del ingrediente');
+    nombre.placeholder = 'Nombre del ingrediente u opción'; nombre.value = i.nombre || '';
+    nombre.setAttribute('aria-label', 'Nombre del ingrediente u opción');
     const quitar = elemento('input'); quitar.type = 'checkbox'; quitar.checked = i.sePuedeQuitar === true;
     const disponible = elemento('input'); disponible.type = 'checkbox'; disponible.checked = i.disponible !== false;
+    const opcion = elemento('input'); opcion.type = 'checkbox'; opcion.checked = i.esOpcion === true;
+    const sincronizar = () => { if (opcion.checked) quitar.checked = false; quitar.disabled = opcion.checked; };
+    opcion.addEventListener('change', sincronizar); sincronizar();
+    const l3 = elemento('label'); l3.append(opcion, ' Es una opción seleccionable');
     const l1 = elemento('label'); l1.append(quitar, ' Se puede quitar');
     const l2 = elemento('label'); l2.append(disponible, ' Disponible');
-    fila.append(nombre, l1, l2, boton('Quitar ingrediente', () => fila.remove()));
+    fila.append(nombre, l1, l2, l3, boton('Eliminar fila', () => fila.remove()));
     ingredientes.append(fila);
 }
 function abrirFormulario(p = null) {
@@ -63,19 +67,24 @@ function abrirFormulario(p = null) {
     $('descripcion-producto').value = p?.descripcion ?? '';
     $('precio-producto').value = p?.precio ?? '';
     $('disponible-producto').checked = p?.disponible ?? true;
+    $('opciones-minimas').value = p?.opciones_minimas ?? 0;
+    $('opciones-maximas').value = p?.opciones_maximas ?? 0;
     (p?.ingredientes || []).forEach(agregarIngrediente);
     formulario.hidden = false;
     formulario.scrollIntoView({behavior:'smooth'});
 }
 async function cargar() {
     const datos = await api();
+    if (!Array.isArray(datos.productos) || datos.productos.some(p => !Number.isInteger(p.opciones_minimas) || !Number.isInteger(p.opciones_maximas) || !Array.isArray(p.ingredientes) || p.ingredientes.some(i => typeof i.esOpcion !== 'boolean'))) throw new Error('La API no devuelve la configuración de opciones. No edites el catálogo.');
     lista.replaceChildren();
     for (const p of datos.productos) {
         const tarjeta = elemento('article', undefined, 'tarjeta-pedido');
         tarjeta.append(elemento('h3', p.nombre), elemento('p', p.descripcion || ''),
             elemento('p', `$${Number(p.precio).toFixed(2)} MXN`, 'total-pedido'),
             elemento('p', p.disponible ? '🟢 Disponible' : '🔴 No disponible'),
-            elemento('p', 'Ingredientes: ' + (p.ingredientes.map(i => i.nombre).join(', ') || 'Sin ingredientes')),
+            elemento('p', 'Ingredientes: ' + (p.ingredientes.filter(i => !i.esOpcion).map(i => i.nombre).join(', ') || 'Sin ingredientes')),
+            elemento('p', 'Opciones: ' + (p.ingredientes.filter(i => i.esOpcion).map(i => i.nombre + (i.disponible ? '' : ' (no disponible)')).join(', ') || 'Sin opciones')),
+            elemento('p', `Selección: mínimo ${p.opciones_minimas}, máximo ${p.opciones_maximas}`),
             boton('Editar', () => abrirFormulario(p)),
             boton(p.disponible ? 'Desactivar' : 'Activar', () => cambiarDisponibilidad(p)));
         lista.append(tarjeta);
@@ -97,10 +106,15 @@ form.addEventListener('submit', async e => {
     e.preventDefault(); if (ocupado) return;
     const datos = { nombre: $('nombre-producto').value.trim(), descripcion: $('descripcion-producto').value.trim(),
         precio: Number($('precio-producto').value), disponible: $('disponible-producto').checked,
+        opcionesMinimas: Number($('opciones-minimas').value), opcionesMaximas: Number($('opciones-maximas').value),
         ingredientes: Array.from(ingredientes.children, fila => {
-            const [nombre, quitar, disponible] = fila.querySelectorAll('input');
-            return {nombre: nombre.value.trim(), sePuedeQuitar: quitar.checked, disponible: disponible.checked};
+            const [nombre, quitar, disponible, opcion] = fila.querySelectorAll('input');
+            return {nombre: nombre.value.trim(), sePuedeQuitar: !opcion.checked && quitar.checked, disponible: disponible.checked, esOpcion: opcion.checked};
         }) };
+    const min = datos.opcionesMinimas, max = datos.opcionesMaximas;
+    const opciones = datos.ingredientes.filter(i => i.esOpcion);
+    if (!Number.isInteger(min) || !Number.isInteger(max) || min < 0 || max < min || max > 40 || min > opciones.filter(i => i.disponible).length || (max === 0 && opciones.length) || (max > 0 && !opciones.length) || max > opciones.length) return alert('Revisa los límites y las opciones disponibles. Usa 0 y 0 si no hay opciones.');
+    if (datos.ingredientes.some(i => !i.nombre) || new Set(datos.ingredientes.map(i => i.nombre.toLowerCase())).size !== datos.ingredientes.length) return alert('Revisa los nombres vacíos o duplicados.');
     if (!confirm('¿Guardar los cambios del producto?')) return;
     ocupado = true; $('btn-guardar-producto').disabled = true;
     try {

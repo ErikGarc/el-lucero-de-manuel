@@ -2,120 +2,49 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Productos | El Lucero de Manuel</title>
     <link rel="stylesheet" href="css/estilos.css">
 </head>
-
 <body>
-
     <main class="pagina-pedidos" hidden>
-
         <header class="encabezado-pedidos">
-
-            <img src="assets/imagenes/logo.png"
-                 alt="El Lucero de Manuel"
-                 class="logo-pedidos">
-
+            <img src="assets/imagenes/logo.png" alt="El Lucero de Manuel" class="logo-pedidos">
             <h1>Administración del menú</h1>
-
             <p>El Lucero de Manuel</p>
-
-            <a href="admin.html" class="volver-admin">
-                ← Volver al panel
-            </a>
-
+            <a href="admin.html" class="volver-admin">← Volver al panel</a>
         </header>
-
         <section class="contenedor-pedidos">
-
             <h2>Productos registrados</h2>
-
-            <p id="mensaje-productos" role="status">
-                Consultando productos...
-            </p>
-
-            <button type="button"
-                    id="btn-agregar-producto"
-                    class="boton-modulo"
-                    disabled>
-                + Agregar producto
-            </button>
-
+            <p id="mensaje-productos" role="status">Consultando productos...</p>
+            <button type="button" id="btn-agregar-producto" class="boton-modulo" disabled>+ Agregar producto</button>
             <section id="formulario-producto" hidden>
-
-                <h2 id="titulo-formulario">
-                    Nuevo producto
-                </h2>
-
+                <h2 id="titulo-formulario">Nuevo producto</h2>
                 <form id="form-producto">
-
-                    <label for="nombre-producto">
-                        Nombre
-                    </label>
-
-                    <input type="text"
-                           id="nombre-producto"
-                           maxlength="100"
-                           required>
-
-                    <label for="descripcion-producto">
-                        Descripción
-                    </label>
-
-                    <textarea id="descripcion-producto"
-                              maxlength="500"></textarea>
-
-                    <label for="precio-producto">
-                        Precio (MXN)
-                    </label>
-
-                    <input type="number"
-                           id="precio-producto"
-                           min="0.01"
-                           max="10000"
-                           step="0.01"
-                           required>
-
-                    <label>
-                        <input type="checkbox"
-                               id="disponible-producto"
-                               checked>
-                        Producto disponible
-                    </label>
-
-                    <h3>Ingredientes</h3>
-
+                    <label for="nombre-producto">Nombre</label>
+                    <input type="text" id="nombre-producto" maxlength="100" required>
+                    <label for="descripcion-producto">Descripción</label>
+                    <textarea id="descripcion-producto" maxlength="500"></textarea>
+                    <label for="precio-producto">Precio (MXN)</label>
+                    <input type="number" id="precio-producto" min="0.01" max="10000" step="0.01" required>
+                    <label><input type="checkbox" id="disponible-producto" checked> Producto disponible</label>
+                    <h3>Configuración de opciones</h3>
+                    <p>Usa 0 y 0 si el producto no tiene opciones seleccionables.</p>
+                    <label for="opciones-minimas">Mínimo de opciones por orden</label>
+                    <input type="number" id="opciones-minimas" min="0" max="40" step="1" value="0" required>
+                    <label for="opciones-maximas">Máximo de opciones por orden</label>
+                    <input type="number" id="opciones-maximas" min="0" max="40" step="1" value="0" required>
+                    <h3>Ingredientes y opciones</h3>
+                    <p>Marca «Es una opción seleccionable» para sabores o bebidas.</p>
                     <div id="lista-ingredientes"></div>
-
-                    <button type="button"
-                            id="btn-agregar-ingrediente">
-                        + Agregar ingrediente
-                    </button>
-
-                    <button type="submit"
-                            id="btn-guardar-producto">
-                        Guardar producto
-                    </button>
-
-                    <button type="button"
-                            id="btn-cancelar-producto">
-                        Cancelar
-                    </button>
-
+                    <button type="button" id="btn-agregar-ingrediente">+ Agregar ingrediente u opción</button>
+                    <button type="submit" id="btn-guardar-producto">Guardar producto</button>
+                    <button type="button" id="btn-cancelar-producto">Cancelar</button>
                 </form>
-
             </section>
-
             <div id="lista-productos"></div>
-
         </section>
-
     </main>
-
     <script type="module" src="js/productos.js"></script>
-
 </body>
 </html>
