@@ -9,6 +9,7 @@ const panel = document.querySelector(".panel-admin");
 const mensaje = document.getElementById("mensaje-estado-admin");
 const boton = document.getElementById("btn-cambiar-estado");
 const cerrar = document.getElementById("btn-cerrar-sesion");
+const moduloCupones = document.getElementById("modulo-cupones");
 
 let cargado = false, abierto = false, guardando = false;
 let generacion = 0, temporizador = null, autorizado = false;
@@ -39,6 +40,7 @@ function detener() {
     cargado = false;
     clearTimeout(temporizador);
     panel.hidden = true;
+    moduloCupones.hidden = true;
     pintar();
 }
 
@@ -114,6 +116,7 @@ onAuthStateChanged(auth, async usuario => {
         }
 
         autorizado = true;
+        moduloCupones.hidden = false;
         panel.hidden = false;
 
         pintar();

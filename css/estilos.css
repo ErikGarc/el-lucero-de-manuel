@@ -1086,3 +1086,312 @@ main p {
 .kds .kds-btn.principal{background:#ffc400;color:#111;border-color:#ffc400}.kds .kds-btn:disabled{opacity:.45;cursor:not-allowed}
 .kds-ticket{background:#202020;border:1px solid #444;border-top:5px solid #ffc400;border-radius:12px;padding:18px;min-width:0;color:#fff;text-align:left;overflow-wrap:anywhere}.kds-ticket.estado-preparando{border-top-color:#60a5fa}.kds-ticket.estado-listo{border-top-color:#4ade80}.kds-ticket.estado-entregado,.kds-ticket.estado-cancelado{border-top-color:#888}
 .kds-cabecera{display:flex;justify-content:space-between;align-items:center;gap:8px}.kds-cabecera h2{font-size:32px;margin:0;color:#ffc400}.kds-estado{font-weight:bold}.kds-origen{padding:8px;border-radius:6px;margin:10px 0;font-weight:bold}.kds-origen.mostrador{background:#153b25;color:#4ade80}.kds-origen.linea{background:#172f49;color:#93c5fd}.kds-reloj{color:#ffc400;font-weight:bold}.kds-item{padding:14px 0;border-bottom:1px solid #444;font-size:20px}.kds-sin{background:#482020;color:#ffb4b4;padding:9px;margin-top:8px;border-radius:6px;font-weight:bold}.kds-total{color:#ffc400;font-weight:bold;font-size:23px}.kds-ticket .kds-btn{display:block;width:100%;margin-top:10px}.kds-modal{box-sizing:border-box;width:min(900px,94vw);max-height:90vh;overflow:auto;background:#151515;color:white;border:1px solid #ffc400;border-radius:16px;padding:18px;margin:auto}.kds-modal::backdrop{background:#000c}.kds-modal .kds-ticket{margin-top:12px}.kds-modal .kds-item{font-size:clamp(23px,4vw,40px)}.kds-modal .kds-cabecera h2{font-size:48px}.kds-modal .kds-btn{font-size:20px}.kds-cocina{background:#111;overflow:auto;width:100%;max-width:none;box-sizing:border-box;padding:16px}.kds-cocina .encabezado-pedidos{display:none}.kds-cocina .kds-item{font-size:26px}.kds-cocina .kds-modal .kds-item{font-size:clamp(28px,5vw,48px)}
+
+/* Administrador de menú: estilos exclusivos */
+#pagina-menu-admin [hidden] { display: none !important; }
+#pagina-menu-admin .menu-admin-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-bottom:24px; }
+#pagina-menu-admin .menu-admin-tabs button { background:#202020; color:#fff; border:1px solid #555; border-radius:12px; padding:20px 8px; font:inherit; font-weight:bold; cursor:pointer; }
+#pagina-menu-admin .menu-admin-tabs button[aria-pressed="true"] { border-color:#ffc400; color:#ffc400; }
+#pagina-menu-admin #campos-simples, #pagina-menu-admin #campos-combo, #pagina-menu-admin #form-categoria { display:grid; gap:12px; }
+#pagina-menu-admin #editor-categoria { background:#1e1e1e; border:1px solid #ffc400; border-radius:16px; padding:24px; margin-bottom:24px; text-align:left; }
+#pagina-menu-admin #form-categoria label { display:grid; gap:8px; }
+#pagina-menu-admin select, #pagina-menu-admin #form-categoria input:not([type="checkbox"]) { width:100%; min-width:0; background:#303030; color:white; border:1px solid #555; border-radius:9px; padding:12px; font:inherit; }
+#pagina-menu-admin #lista-componentes { display:grid; gap:10px; }
+#pagina-menu-admin #lista-componentes > div { display:grid; grid-template-columns:minmax(0,1fr) 80px auto; gap:10px; align-items:center; }
+#pagina-menu-admin button { cursor:pointer; }
+#pagina-menu-admin button:disabled { cursor:not-allowed; opacity:.5; }
+@media(max-width:600px){ #pagina-menu-admin .menu-admin-tabs { grid-template-columns:1fr; } #pagina-menu-admin #lista-componentes > div { grid-template-columns:1fr; } }
+
+/* Menú público: categorías y componentes */
+#lista-productos.menu-por-categorias {display:block; width:100%;}
+.menu-categoria {border:1px solid #444; border-radius:12px; margin:14px auto; padding:12px; background:#191919; max-width:1100px;}
+.menu-categoria > summary {cursor:pointer; color:#ffc400; font-weight:bold; padding:12px; text-align:left;}
+.menu-categoria > .contenedor-productos {margin-top:12px;}
+.modal-personalizacion .modal-contenido {max-height:85vh; overflow-y:auto;}
+.modal-personalizacion .menu-componente {padding:10px 0; border-bottom:1px solid #444;}
+.modal-personalizacion .menu-componente h3 {color:#ffc400;}
+
+/* Menú público estilo app: agregar al final */
+.lucero-menu-app {padding-bottom:90px;}
+#lista-productos.lucero-app-catalogo {display:block;max-width:960px;margin:24px auto;text-align:left;box-sizing:border-box;padding:0 12px;}
+.lucero-app-nav {display:flex;gap:10px;overflow-x:auto;padding:5px 2px 14px;scrollbar-width:thin;scrollbar-color:#666 #191919;}
+.lucero-app-nav button {flex:0 0 auto;min-width:100px;max-width:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#242424;color:#fff;border:1px solid #444;border-radius:14px;padding:14px 12px;font-weight:bold;cursor:pointer;white-space:normal;}
+.lucero-app-nav button[aria-pressed="true"] {background:#ffc400;color:#141414;border-color:#ffc400;}
+.lucero-app-icono {font-size:30px;line-height:1.2;}
+.lucero-app-titulo {display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0 12px;}
+.lucero-app-titulo h3 {color:#ffc400;margin:0;font-size:22px;}
+.lucero-app-titulo span {color:#bbb;font-size:13px;}
+.lucero-app-lista {display:grid;grid-template-columns:1fr;gap:12px;}
+#lista-productos .lucero-app-producto {display:flex;align-items:center;gap:14px;text-align:left;padding:14px;margin:0;width:100%;min-width:0;box-sizing:border-box;background:#202020;border:1px solid #383838;border-radius:16px;}
+#lista-productos .lucero-app-producto .producto-imagen {flex:0 0 70px;width:70px;height:70px;display:grid;place-items:center;background:#2c2923;border-radius:12px;font-size:32px;margin:0;}
+.lucero-app-detalle {flex:1;min-width:0;overflow-wrap:anywhere;}
+#lista-productos .lucero-app-detalle h3 {font-size:16px;margin:0 0 5px;color:#fff;}
+#lista-productos .lucero-app-detalle p {font-size:13px;color:#bbb;margin:0 0 8px;line-height:1.4;}
+#lista-productos .lucero-app-detalle .precio {font-size:18px;color:#ffc400;margin:0;}
+#lista-productos .lucero-app-producto button {flex:0 0 40px;width:40px;height:40px;padding:0;margin:0;border:0;border-radius:50%;background:#ffc400;color:#111;font-size:25px;cursor:pointer;}
+.lucero-carrito-flotante {position:fixed;bottom:calc(12px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:min(540px,calc(100% - 28px));z-index:20;background:#ffc400;color:#111;border:0;border-radius:14px;padding:16px;font-weight:bold;font-size:16px;box-shadow:0 5px 24px #0009;cursor:pointer;}
+.lucero-carrito-flotante[hidden],.lucero-menu-app:has(.modal-personalizacion:not([hidden])) .lucero-carrito-flotante {display:none!important;}
+.lucero-menu-app .seccion-carrito {scroll-margin-top:16px;}
+@media(min-width:760px){.lucero-app-lista{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:380px){#lista-productos .lucero-app-producto{gap:9px;padding:10px;}#lista-productos .lucero-app-producto .producto-imagen{flex-basis:48px;width:48px;height:58px;font-size:25px;}}
+
+.lucero-app-nav button[aria-pressed="false"] {
+    background: #242424 !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+}
+
+.lucero-app-nav button[aria-pressed="true"] {
+    background: #ffc400 !important;
+    color: #141414 !important;
+    border-color: #ffc400 !important;
+}
+#productos-mostrador {display:block!important;min-width:0;}
+#productos-mostrador .lucero-app-nav {max-width:100%;}
+#productos-mostrador .mostrador-app-lista {display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));}
+#productos-mostrador .mostrador-app-producto {display:flex;align-items:center;gap:12px;background:#202020;border:1px solid #383838;border-radius:14px;padding:12px;min-width:0;}
+#productos-mostrador .mostrador-app-producto h3 {margin:0;color:#fff;font-size:16px;}
+#productos-mostrador .mostrador-app-producto p {margin:5px 0;font-size:13px;}
+#productos-mostrador .mostrador-app-producto button {flex:0 0 38px;width:38px;height:38px;padding:0;border-radius:50%;background:#ffc400;color:#111;}
+#modal-mostrador .mostrador-componente {border-bottom:1px solid #444;padding:12px 0;text-align:left;}
+#modal-mostrador {max-height:85vh;overflow:auto;}
+
+#productos-mostrador .lucero-app-nav {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 8px 0;
+    margin-bottom: 15px;
+    box-sizing: border-box;
+}
+
+#productos-mostrador .lucero-app-nav button {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    min-width: 95px;
+    margin: 0 !important;
+}
+
+#productos-mostrador .mostrador-app-lista {
+    width: 100%;
+    min-width: 0;
+}
+
+/* Desglose de combos en cocina y pedidos ampliados */
+.kds .kds-combo-componentes { margin-top: 10px; padding-left: 12px; border-left: 3px solid #ffc400; }
+.kds .kds-combo-nota { color: #ddd; font-size: .85em; margin-bottom: 6px; }
+.kds .kds-combo-componente { padding: 9px 0; border-bottom: 1px solid #444; overflow-wrap: anywhere; }
+.kds .kds-combo-componente:last-child { border-bottom: 0; }
+/* Fase 12: administración de cupones */
+#modulo-cupones[hidden], #pagina-cupones[hidden], #pagina-cupones [hidden] { display:none!important; }
+#pagina-cupones .cupones-contenedor { max-width:900px; margin:auto; text-align:left; }
+#mensaje-cupones { margin:16px 0; overflow-wrap:anywhere; }
+.cupones-resumen { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin-bottom:20px; }
+.cupones-resumen > div { background:#202020; border:1px solid #444; border-radius:12px; padding:14px 6px; text-align:center; font-size:13px; }
+.cupones-resumen strong { display:block; color:#ffc400; font-size:28px; }
+#pagina-cupones .cupones-barra { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:10px; }
+#pagina-cupones button { background:#ffc400; color:#111; border:1px solid transparent; border-radius:9px; padding:12px 16px; font:inherit; font-weight:bold; cursor:pointer; }
+#pagina-cupones button:disabled { opacity:.5; cursor:not-allowed; }
+#pagina-cupones .cupon-secundario { background:#303030; color:white; border-color:#666; }
+#pagina-cupones .cupon-peligro { background:#702727; color:white; }
+#form-cupon, .cupon-tarjeta { background:#1e1e1e; border:1px solid #444; border-radius:16px; padding:20px; display:grid; gap:12px; min-width:0; overflow-wrap:anywhere; }
+#form-cupon { margin:20px 0; border-color:#ffc400; }
+#campos-nuevo-cupon { display:grid; gap:12px; }
+#pagina-cupones input:not([type=checkbox]), #pagina-cupones select { width:100%; min-width:0; background:#303030; color:white; border:1px solid #666; border-radius:9px; padding:12px; font:inherit; }
+#pagina-cupones input[type=checkbox] { accent-color:#ffc400; }
+#lista-cupones { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:20px; }
+.cupon-tarjeta h3, .cupon-descuento { color:#ffc400; font-size:22px; }
+.cupon-estado { background:#333; border-radius:20px; padding:6px 10px; font-size:13px; }
+.cupon-estado.activo { color:#4ade80; background:#153b25; }
+.cupon-estado.agotado { color:#ffd966; background:#594615; }
+.cupon-tarjeta progress { width:100%; accent-color:#ffc400; }
+#pagina-cupones :focus-visible { outline:2px solid #ffc400; outline-offset:3px; }
+@media(max-width:650px) { #lista-cupones { grid-template-columns:1fr; } }
+
+/* Cupón del carrito público */
+.carrito-cupon { text-align:left; margin:20px 0; padding:16px; border:1px solid #444; border-radius:12px; }
+.carrito-cupon label { display:block; font-weight:bold; margin-bottom:12px; }
+.cupon-controles { display:flex; flex-wrap:wrap; gap:8px; }
+.cupon-controles input { flex:1 1 150px; min-width:0; padding:12px; background:#303030; color:white; border:1px solid #666; border-radius:9px; font:inherit; text-transform:uppercase; }
+.cupon-controles button { background:#ffc400; color:#111; border:0; border-radius:9px; padding:12px; font-weight:bold; cursor:pointer; }
+.cupon-controles button:disabled { opacity:.5; cursor:not-allowed; }
+.carrito-cupon [hidden] { display:none!important; }
+#quitar-cupon { background:#702727; color:white; }
+#mensaje-cupon, #importes-cupon { margin-top:10px; font-size:14px; overflow-wrap:anywhere; }
+#importes-cupon { color:#4ade80; }
+
+/* =====================================
+   VENTANAS PERSONALIZADAS DE CUPONES
+===================================== */
+
+#modal-cupon {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    width: min(480px, calc(100% - 28px));
+    max-height: 90vh;
+    overflow-y: auto;
+    background: #202020;
+    color: #ffffff;
+    border: 1px solid #ffc400;
+    border-radius: 22px;
+    padding: 26px;
+    text-align: left;
+    box-shadow: 0 20px 70px #0009;
+    color-scheme: dark;
+}
+
+#modal-cupon:not([open]) {
+    display: none;
+}
+
+#modal-cupon[open] {
+    animation: entradaModalCupon 0.22s ease-out;
+}
+
+#modal-cupon::backdrop {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(5px);
+}
+
+.modal-cupon-cabecera {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 15px;
+    padding-bottom: 18px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #383838;
+}
+
+.modal-cupon-cabecera h2 {
+    color: #ffc400;
+    font-size: 25px;
+    margin: 0 0 5px;
+}
+
+.modal-cupon-cabecera p {
+    color: #999999;
+    font-size: 13px;
+}
+
+#pagina-cupones #cerrar-modal-cupon {
+    padding: 8px 12px;
+    border-radius: 10px;
+}
+
+#modal-cupon-contenido {
+    display: grid;
+    gap: 16px;
+}
+
+#modal-cupon-contenido p {
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.modal-cupon-codigo {
+    color: #ffc400;
+    font-size: 24px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+
+.modal-cupon-estadisticas {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.modal-cupon-estadisticas > div {
+    background: #292929;
+    border: 1px solid #383838;
+    border-radius: 12px;
+    padding: 14px 5px;
+    text-align: center;
+}
+
+.modal-cupon-estadisticas strong {
+    display: block;
+    color: #ffc400;
+    font-size: 23px;
+    overflow-wrap: anywhere;
+}
+
+.modal-cupon-estadisticas span {
+    color: #bbbbbb;
+    font-size: 12px;
+}
+
+.modal-cupon-resultado {
+    background: #302b1c;
+    border: 1px solid #66521c;
+    border-radius: 12px;
+    padding: 16px;
+}
+
+.modal-cupon-resultado strong {
+    display: block;
+    color: #ffc400;
+    font-size: 30px;
+    margin-top: 5px;
+}
+
+.modal-cupon-nota {
+    color: #aaaaaa;
+    font-size: 13px !important;
+}
+
+.modal-cupon-acciones {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+#modal-cupon button:not(:disabled):hover {
+    filter: brightness(1.15);
+}
+
+#modal-cupon input:focus {
+    border-color: #ffc400;
+    outline: none;
+}
+
+@keyframes entradaModalCupon {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    #modal-cupon {
+        padding: 20px;
+    }
+
+    .modal-cupon-cabecera h2 {
+        font-size: 21px;
+    }
+
+    .modal-cupon-acciones button {
+        padding: 12px 8px;
+        font-size: 13px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    #modal-cupon[open] {
+        animation: none;
+    }
+}

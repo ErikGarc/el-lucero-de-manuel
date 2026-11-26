@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cupones | El Lucero de Manuel</title>
+<link rel="stylesheet" href="css/estilos.css">
+</head>
+<body>
+<main id="pagina-cupones" class="pagina-pedidos" hidden>
+<header class="encabezado-pedidos">
+<img src="assets/imagenes/logo.png" alt="El Lucero de Manuel" class="logo-pedidos">
+<h1>🎟️ Cupones de descuento</h1>
+<p>Administra tus promociones</p>
+<a href="admin.html" class="volver-admin">← Volver al panel</a>
+</header>
+<section class="cupones-contenedor">
+<p id="mensaje-cupones" role="status" aria-live="polite">Consultando cupones...</p>
+<div class="cupones-resumen">
+<div><strong id="cupones-activos">—</strong>Activos</div>
+<div><strong id="cupones-inactivos">—</strong>Desactivados</div>
+<div><strong id="cupones-agotados">—</strong>Agotados</div>
+</div>
+<div class="cupones-barra"><button id="nuevo-cupon" disabled>＋ Crear nuevo cupón</button><button id="recargar-cupones" class="cupon-secundario">Actualizar</button></div>
+<form id="form-cupon" hidden>
+<h2 id="titulo-form-cupon">Nuevo cupón</h2>
+<label for="codigo-cupon">Código</label>
+<input id="codigo-cupon" required maxlength="40" pattern="[A-Za-z0-9_\-]+" placeholder="LUCERO5" autocomplete="off">
+<div id="campos-nuevo-cupon">
+<label for="porcentaje-cupon">Descuento</label>
+<select id="porcentaje-cupon"><option value="5">5%</option><option value="10">10%</option></select>
+<label for="limite-cupon">Máximo de usos</label>
+<input id="limite-cupon" type="number" min="1" max="1000000" step="1" value="10" required>
+<label><input id="activo-cupon" type="checkbox" checked> Activar al crear</label>
+</div>
+<p id="nota-edicion-cupon" hidden>El porcentaje y el límite de usos no se pueden modificar.</p>
+<div class="cupones-barra"><button type="submit">Guardar cupón</button><button type="button" id="cancelar-cupon" class="cupon-secundario">Cancelar</button></div>
+</form>
+<div id="lista-cupones"></div>
+<dialog id="modal-cupon" class="modal-cupon">
+    <div class="modal-cupon-cabecera">
+        <div>
+            <h2 id="modal-cupon-titulo"></h2>
+            <p>El Lucero de Manuel</p>
+        </div>
+        <button type="button" id="cerrar-modal-cupon"
+            class="cupon-secundario"
+            aria-label="Cerrar ventana">✕</button>
+    </div>
+
+    <div id="modal-cupon-contenido"></div>
+
+    <div class="modal-cupon-acciones">
+        <button type="button" id="cancelar-modal-cupon"
+            class="cupon-secundario">Cancelar</button>
+
+        <button type="button" id="confirmar-modal-cupon">
+            Confirmar
+        </button>
+    </div>
+</dialog>
+</section>
+</main>
+<script type="module" src="js/cupones.js"></script>
+</body>
+</html>

@@ -10,8 +10,9 @@ import {
 const auth = getAuth(app);
 const MODO_ENVIO_PRUEBAS = true;
 let cantidadModal = 1;
-const identidad = (id, quitados, opciones) =>
-  JSON.stringify([id, [...quitados].sort(), [...opciones].sort()]);
+const identidad = (id, quitados, opciones, componentes = []) =>
+  JSON.stringify([id, [...quitados].sort(), [...opciones].sort(), componentes]);
+let controles = [];
 const API = "https://el-lucero-pruebas-worker.eriikgow.workers.dev/api";
 const $ = (id) => document.getElementById(id);
 const form = $("form-venta-mostrador");
@@ -25,8 +26,33 @@ const moneda = (n) =>
   new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(
     n,
   );
-const total = () =>
-  carrito.reduce((s, p) => s + p.centavos * p.cantidad, 0) / 100;
+let cupon = null, validandoCupon = false;
+const subtotalCentavos = () => carrito.reduce((s,p)=>s+p.centavos*p.cantidad,0);
+const descuentoCentavos = () => Math.round(subtotalCentavos()*(cupon?.porcentaje || 0)/100);
+const total = () => pendiente ? pendiente.datos.totalEsperado : (subtotalCentavos()-descuentoCentavos())/100;
+const bloqueCupon = document.createElement('div');
+bloqueCupon.className = 'carrito-cupon';
+bloqueCupon.innerHTML = `<label for="codigo-cupon">🎟️ Cupón de descuento</label><div class="cupon-controles"><input id="codigo-cupon" maxlength="40" placeholder="Código de cupón" autocomplete="off"><button type="button" id="aplicar-cupon">Aplicar</button><button type="button" id="quitar-cupon" hidden>Quitar</button></div><p id="mensaje-cupon" role="status"></p><div id="importes-cupon" hidden></div>`;
+$('total-mostrador').closest('h3').before(bloqueCupon);
+function limpiarCupon(){cupon=null;$('codigo-cupon').value='';$('mensaje-cupon').textContent='';}
+$('aplicar-cupon').onclick = async () => {
+  if(ocupado||pendiente||validandoCupon||!usuario||!carrito.length||cupon)return;
+  const codigo=$('codigo-cupon').value.trim().toUpperCase();
+  if(!/^[A-Z0-9_-]{1,40}$/.test(codigo)){ $('mensaje-cupon').textContent='Escribe un código válido.';return; }
+  const u=usuario;
+  validandoCupon=true; actualizar(); $('mensaje-cupon').textContent='Validando cupón...';
+  try {
+    const r=await fetch(API+'/cupones/validar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({codigo}),signal:AbortSignal.timeout(10000)});
+    const d=await r.json();
+    if(usuario!==u||auth.currentUser?.uid!==u.uid)return;
+    if(!r.ok||d.valido!==true||![5,10].includes(d.porcentaje)||typeof d.codigo!=='string')throw Error(d.error||'Cupón no disponible');
+    cupon={codigo:d.codigo,porcentaje:d.porcentaje}; $('codigo-cupon').value=d.codigo;
+    $('mensaje-cupon').textContent=`Cupón aplicado: ${d.porcentaje}% de descuento`;
+  } catch(e){if(usuario===u)$('mensaje-cupon').textContent=e.message;}
+  finally{validandoCupon=false;actualizar();}
+};
+$('quitar-cupon').onclick=()=>{if(!ocupado&&!pendiente&&!validandoCupon){limpiarCupon();actualizar();}};
+$('codigo-cupon').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('aplicar-cupon').click();}};
 const nodo = (tag, texto, clase) => {
   const e = document.createElement(tag);
   if (texto !== undefined) e.textContent = texto;
@@ -37,12 +63,19 @@ function boton(texto, accion) {
   const b = nodo("button", texto, "boton-modulo");
   b.type = "button";
   b.onclick = () => {
-    if (!ocupado && !pendiente) accion();
+    if (!ocupado && !pendiente && !validandoCupon) accion();
   };
   return b;
 }
 function actualizar() {
-  const bloqueado = ocupado || !!pendiente;
+  const bloqueado = ocupado || !!pendiente || validandoCupon;
+  if(!carrito.length && !pendiente && !validandoCupon) limpiarCupon();
+  $('codigo-cupon').disabled=bloqueado||!!cupon||!carrito.length;
+  $('aplicar-cupon').disabled=bloqueado||!!cupon||!carrito.length;
+  $('quitar-cupon').disabled=bloqueado;
+  $('quitar-cupon').hidden=!cupon;
+  $('importes-cupon').hidden=!cupon;
+  $('importes-cupon').textContent=`Subtotal: ${moneda(subtotalCentavos()/100)} · Descuento (${cupon?.porcentaje||0}%): −${moneda(descuentoCentavos()/100)}`;
   const efectivo = $("pago-mostrador").value === "efectivo";
   $("seccion-efectivo").hidden = !efectivo;
   $("efectivo-recibido").required = efectivo;
@@ -54,7 +87,7 @@ function actualizar() {
   for (const e of form.querySelectorAll("input,select,button"))
     e.disabled = bloqueado;
   $("btn-registrar-venta").disabled =
-    ocupado ||
+    ocupado || validandoCupon ||
     !usuario ||
     (!pendiente &&
       (!carrito.length ||
@@ -83,13 +116,19 @@ function actualizar() {
             : "",
         ]
           .filter(Boolean)
-          .join(" | ") || "Sin modificaciones",
+          .join(" | ") ||
+    (p.componentesCombo?.length
+        ? "Personalización por componente:"
+        : "Sin modificaciones"),
       ),
       nodo(
         "p",
         `${p.cantidad} × ${moneda(p.centavos / 100)} = ${moneda((p.centavos * p.cantidad) / 100)}`,
       ),
     );
+    for (const c of p.componentesCombo || []) {
+      fila.append(nodo("p", `${c.nombre}: ${[c.ingredientesQuitados.length ? "Sin " + c.ingredientesQuitados.join(", ") : "", c.opcionesElegidas.length ? "Opciones: " + c.opcionesElegidas.join(" + ") : ""].filter(Boolean).join(" | ") || "Sin modificaciones"}`));
+    }
     const menos = boton("−", () => {
       if (--p.cantidad === 0) carrito.splice(i, 1);
       actualizar();
@@ -116,58 +155,43 @@ function personalizar(p) {
   if (intro) intro.textContent = "Personaliza tu producto";
   const lista = $("ingredientes-mostrador");
   lista.replaceChildren();
-  const min = p.opciones_minimas,
-    max = p.opciones_maximas;
-  const opciones = p.ingredientes.filter((i) => i.disponible && i.esOpcion);
-  const removibles = p.ingredientes.filter(
-    (i) => i.disponible && i.sePuedeQuitar && !i.esOpcion,
-  );
-  if (opciones.length < min)
-    return alert("No hay suficientes opciones disponibles.");
+  const bloques = p.esCombo ? p.componentesCombo.flatMap(c => Array.from({length:c.cantidad}, (_,i)=>({componenteId:c.id,unidad:i+1,producto:c.producto}))) : [{producto:p}];
   const agregar = $("btn-confirmar-producto");
   const subt = nodo("p", undefined, "total-pedido");
   const cantidad = nodo("strong", "1");
+  controles = bloques.map((c, i) => {
+    const base = c.producto;
+    const bloque = nodo("section", undefined, "mostrador-componente");
+    if (p.esCombo) bloque.append(nodo("h3", `${i+1}. ${base.nombre}`));
+    const opciones = base.ingredientes.filter(x=>x.disponible && x.esOpcion);
+    const removibles = base.ingredientes.filter(x=>x.disponible && x.sePuedeQuitar && !x.esOpcion);
+    const checks = [], quitar = [];
+    function casilla(x, esOpcion) {
+      const l = nodo("label"), input = nodo("input");
+      input.type = "checkbox"; input.value = x.nombre;
+      input.onchange = () => actualizarModal();
+      l.append(input, esOpcion ? " " + x.nombre : " Sin " + x.nombre);
+      bloque.append(l, nodo("br"));
+      (esOpcion ? checks : quitar).push(input);
+    }
+    if (base.opciones_maximas > 0) { bloque.append(nodo("p", `Elige de ${base.opciones_minimas} a ${base.opciones_maximas} opciones.`)); opciones.forEach(x=>casilla(x,true)); }
+    if (removibles.length) { bloque.append(nodo("p", "Ingredientes que deseas quitar:")); removibles.forEach(x=>casilla(x,false)); }
+    lista.append(bloque);
+    return {c,base,checks,quitar};
+  });
   const actualizarModal = () => {
-    const checks = [...lista.querySelectorAll('input[data-tipo="opcion"]')];
-    const n = checks.filter((c) => c.checked).length;
-    checks.forEach((c) => (c.disabled = !c.checked && n >= max));
-    agregar.disabled = n < min || n > max;
+    let valido = controles.length > 0;
+    for (const {base,checks} of controles) {
+      const n = checks.filter(c=>c.checked).length;
+      checks.forEach(c=>c.disabled = !c.checked && n >= base.opciones_maximas);
+      if (n < base.opciones_minimas || n > base.opciones_maximas) valido = false;
+    }
+    agregar.disabled = !valido;
     cantidad.textContent = String(cantidadModal);
-    subt.textContent =
-      "Subtotal: " + moneda((Math.round(p.precio * 100) * cantidadModal) / 100);
+    subt.textContent = "Subtotal: " + moneda(Math.round(p.precio*100)*cantidadModal/100);
     menos.disabled = cantidadModal <= 1;
     mas.disabled = cantidadModal >= 20;
   };
-  if (max > 0) {
-    lista.append(
-      nodo(
-        "p",
-        `Elige de ${min} a ${max} opciones por orden (sin costo adicional).`,
-      ),
-    );
-    for (const i of opciones) {
-      const l = nodo("label");
-      const c = nodo("input");
-      c.type = "checkbox";
-      c.value = i.nombre;
-      c.dataset.tipo = "opcion";
-      c.onchange = actualizarModal;
-      l.append(c, " " + i.nombre);
-      lista.append(l, nodo("br"));
-    }
-  }
-  if (removibles.length) {
-    lista.append(nodo("p", "Ingredientes que deseas quitar:"));
-    for (const i of removibles) {
-      const l = nodo("label");
-      const c = nodo("input");
-      c.type = "checkbox";
-      c.value = i.nombre;
-      c.dataset.tipo = "quitar";
-      l.append(c, " Sin " + i.nombre);
-      lista.append(l, nodo("br"));
-    }
-  }
   lista.append(nodo("p", "Cantidad de órdenes (misma personalización)"));
   const menos = boton("−", () => {
     cantidadModal = Math.max(1, cantidadModal - 1);
@@ -188,26 +212,15 @@ function personalizar(p) {
 $("btn-cancelar-personalizacion").onclick = () => modal.close();
 $("btn-confirmar-producto").onclick = () => {
   if (!seleccionado || ocupado || pendiente) return;
-  const lista = $("ingredientes-mostrador");
-  const quitados = Array.from(
-    lista.querySelectorAll('input[data-tipo="quitar"]:checked'),
-    (e) => e.value,
-  ).sort();
-  const opciones = Array.from(
-    lista.querySelectorAll('input[data-tipo="opcion"]:checked'),
-    (e) => e.value,
-  ).sort();
+  if ($("btn-confirmar-producto").disabled) return;
   const p = seleccionado;
-  if (
-    opciones.length < p.opciones_minimas ||
-    opciones.length > p.opciones_maximas
-  )
-    return alert("Revisa las opciones elegidas.");
-  const key = identidad(p.id, quitados, opciones);
-  const existente = carrito.find(
-    (x) =>
-      identidad(x.id, x.ingredientesQuitados, x.opcionesElegidas || []) === key,
-  );
+  const leer = a => a.filter(x=>x.checked).map(x=>x.value).sort();
+  const seleccion = controles.map(({c,base,checks,quitar})=>({componenteId:c.componenteId,unidad:c.unidad,nombre:base.nombre,ingredientesQuitados:leer(quitar),opcionesElegidas:leer(checks)}));
+  const quitados = p.esCombo ? [] : seleccion[0].ingredientesQuitados;
+  const opciones = p.esCombo ? [] : seleccion[0].opcionesElegidas;
+  const componentesCombo = p.esCombo ? seleccion : [];
+  const key = identidad(p.id, quitados, opciones, componentesCombo);
+  const existente = carrito.find(x=>identidad(x.id,x.ingredientesQuitados,x.opcionesElegidas || [],x.componentesCombo || [])===key);
   if (existente) {
     if (existente.cantidad + cantidadModal > 20)
       return alert("Máximo 20 órdenes por personalización.");
@@ -221,6 +234,7 @@ $("btn-confirmar-producto").onclick = () => {
       cantidad: cantidadModal,
       ingredientesQuitados: quitados,
       opcionesElegidas: opciones,
+      componentesCombo,
     });
   }
   modal.close();
@@ -243,23 +257,36 @@ async function cargar() {
     )
   )
     throw Error("El catálogo no incluye la configuración de opciones.");
-  for (const p of d.productos.filter((p) => p.disponible)) {
-    const card = nodo("article", undefined, "tarjeta-pedido");
-    card.append(
-      nodo("h3", p.nombre),
-      nodo("p", p.descripcion || ""),
-      nodo("p", moneda(p.precio), "total-pedido"),
-      boton("+ Agregar", () => personalizar(p)),
-    );
-    lista.append(card);
+  if (!Array.isArray(d.categorias) || d.productos.some(p=>typeof p.disponibleEfectivo!=="boolean" || !Array.isArray(p.componentesCombo))) throw Error("Catálogo incompatible.");
+  const disponibles = d.productos.filter(p=>p.disponibleEfectivo);
+  const categorias = d.categorias.filter(c=>c.disponible && disponibles.some(p=>p.categoriaId===c.id)).sort((a,b)=>a.orden-b.orden);
+  const nav = nodo("div",undefined,"lucero-app-nav");
+  const tarjetas = nodo("div",undefined,"mostrador-app-lista");
+  lista.append(nav,tarjetas);
+  function mostrar(c) {
+    for (const b of nav.querySelectorAll("button")) b.setAttribute("aria-pressed",String(b.dataset.id===String(c.id)));
+    tarjetas.replaceChildren();
+    for (const p of disponibles.filter(p=>p.categoriaId===c.id)) {
+      const card = nodo("article",undefined,"mostrador-app-producto");
+      const detalle = nodo("div",undefined,"lucero-app-detalle");
+      detalle.append(nodo("h3",p.nombre),nodo("p",p.descripcion || ""),nodo("p",moneda(p.precio),"total-pedido"));
+      const agregar = boton("+",()=>personalizar(p)); agregar.setAttribute("aria-label","Agregar "+p.nombre);
+      card.append(nodo("span",c.icono || "🍽️","lucero-app-icono"),detalle,agregar); tarjetas.append(card);
+    }
+    actualizar();
   }
+  for (const c of categorias) {
+    const b = boton("",()=>mostrar(c)); b.dataset.id=String(c.id);
+    b.append(nodo("span",c.icono || "🍽️","lucero-app-icono"),nodo("span",c.nombre)); nav.append(b);
+  }
+  if (categorias.length) mostrar(categorias[0]); else tarjetas.append(nodo("p","No hay productos disponibles."));
   $("mensaje-mostrador").textContent = "Selecciona los productos de la orden.";
   actualizar();
 }
 $("pago-mostrador").onchange = actualizar;
 $("efectivo-recibido").oninput = actualizar;
 $("btn-vaciar-orden").onclick = () => {
-  if (!ocupado && !pendiente && confirm("¿Vaciar la orden?")) {
+  if (!ocupado && !pendiente && !validandoCupon && confirm("¿Vaciar la orden?")) {
     carrito = [];
     form.reset();
     actualizar();
@@ -268,14 +295,14 @@ $("btn-vaciar-orden").onclick = () => {
 const clave = (uid) => "lucero-mostrador-pendiente-v1-" + uid;
 form.onsubmit = async (e) => {
   e.preventDefault();
-  if (ocupado || !usuario || auth.currentUser?.uid !== usuario.uid) return;
+  if (ocupado || validandoCupon || !usuario || auth.currentUser?.uid !== usuario.uid) return;
   const uid = usuario.uid;
   if (!MODO_ENVIO_PRUEBAS)
     return alert(
       "Envío temporalmente deshabilitado para pruebas visuales. No se registró ninguna venta.",
     );
   if (!pendiente) {
-    if (!carrito.length || total() > 10000)
+    if (!carrito.length || subtotalCentavos() > 1000000)
       return alert("Revisa el total de la orden.");
     const metodoPago = $("pago-mostrador").value;
     const nombreCliente = $("cliente-mostrador").value.trim();
@@ -296,18 +323,21 @@ form.onsubmit = async (e) => {
       nombreCliente,
       metodoPago,
       totalEsperado: total(),
+      ...(cupon ? {cuponCodigo:cupon.codigo} : {}),
       productos: carrito.map(
-        ({ id, cantidad, ingredientesQuitados, opcionesElegidas }) => ({
+        ({ id, cantidad, ingredientesQuitados, opcionesElegidas, componentesCombo }) => ({
           id,
           cantidad,
           ingredientesQuitados,
           opcionesElegidas: opcionesElegidas || [],
+          componentesCombo: (componentesCombo || []).map(({componenteId,unidad,ingredientesQuitados,opcionesElegidas})=>({componenteId,unidad,ingredientesQuitados,opcionesElegidas})),
         }),
       ),
     };
     const intento = {
       datos,
       carrito: structuredClone(carrito),
+      cupon: cupon ? {...cupon} : null,
       recibido: $("efectivo-recibido").value,
     };
     try {
@@ -332,13 +362,42 @@ form.onsubmit = async (e) => {
       body: JSON.stringify(pendiente.datos),
     });
     const d = await r.json();
-    if (!r.ok || d.guardado !== true) {
-      // Conservar el mismo identificador ante cualquier respuesta incierta.
-      throw Error(d.error || "No se confirmó el registro");
-    }
+
+if (
+  r.status === 409 &&
+  d.error === "CUPON_NO_DISPONIBLE" &&
+  pendiente?.datos.cuponCodigo &&
+  usuario?.uid === uid &&
+  auth.currentUser?.uid === uid
+) {
+  localStorage.removeItem(clave(uid));
+
+  pendiente = null;
+  limpiarCupon();
+
+  $("mensaje-cupon").textContent =
+    "El cupón ya no está disponible. Revisa el nuevo total.";
+
+  $("mensaje-mostrador").textContent =
+    "Venta no registrada. Verifica el importe recibido antes de confirmar nuevamente.";
+
+  alert(
+    "El cupón ya no está disponible.\n\n" +
+    "Se conservaron los productos de la orden.\n" +
+    "Nuevo total: " + moneda(total()) + "\n\n" +
+    "Si ya recibiste dinero, ajusta únicamente la diferencia. No cobres nuevamente el importe completo."
+  );
+
+  return;
+}
+
+if (!r.ok || d.guardado !== true) {
+  throw Error(d.mensaje || d.error || "No se confirmó el registro");
+}
     localStorage.removeItem(clave(uid));
     pendiente = null;
     carrito = [];
+    limpiarCupon();
     form.reset();
     alert(
       `Venta registrada. Pedido #${d.numeroPedido}. Total: ${moneda(d.total)}`,
@@ -360,6 +419,7 @@ onAuthStateChanged(auth, async (u) => {
   usuario = null;
   carrito = [];
   pendiente = null;
+  limpiarCupon();
   if (!u) return location.replace("login.html");
   try {
     const perfil = await getDoc(doc(db, "usuarios", u.uid));
@@ -375,6 +435,8 @@ onAuthStateChanged(auth, async (u) => {
     if (guardado) {
       pendiente = JSON.parse(guardado);
       carrito = pendiente.carrito;
+      cupon = pendiente.cupon || null;
+      if(cupon){$('codigo-cupon').value=cupon.codigo;$('mensaje-cupon').textContent=`Cupón aplicado: ${cupon.porcentaje}% de descuento`; }
       $("cliente-mostrador").value = pendiente.datos.nombreCliente;
       $("pago-mostrador").value = pendiente.datos.metodoPago;
       $("efectivo-recibido").value = pendiente.recibido;

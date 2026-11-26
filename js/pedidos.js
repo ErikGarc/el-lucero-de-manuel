@@ -159,48 +159,55 @@ function tarjeta(p, grande = false) {
         : "Recoger en mostrador",
     ),
   );
+  function mostrarPersonalizacion(destino, producto) {
+    if (Array.isArray(producto.opcionesElegidas) && producto.opcionesElegidas.length) {
+      const opciones = el("div", "OPCIONES: " + producto.opcionesElegidas.join(" + ").toUpperCase(), "kds-opciones");
+      opciones.style.color = "#ffc400";
+      opciones.style.fontWeight = "bold";
+      opciones.style.marginTop = "5px";
+      destino.append(opciones);
+    }
+    if (Array.isArray(producto.ingredientesQuitados) && producto.ingredientesQuitados.length) {
+      destino.append(el("div", "SIN " + producto.ingredientesQuitados.join(", ").toUpperCase(), "kds-sin"));
+    }
+  }
   for (const prod of p.productos) {
-
-    const item = el('div', null, 'kds-item');
-
-    item.append(
-        el('strong', `${prod.cantidad} × ${prod.nombre}`)
-    );
-
-    // Mostrar sabores y opciones seleccionadas
-    if (Array.isArray(prod.opcionesElegidas) &&
-        prod.opcionesElegidas.length > 0) {
-
-        const opciones = el(
-            'div',
-            'OPCIONES: ' +
-            prod.opcionesElegidas.join(' + ').toUpperCase(),
-            'kds-opciones'
-        );
-
-        opciones.style.color = '#ffc400';
-        opciones.style.fontWeight = 'bold';
-        opciones.style.marginTop = '5px';
-
-        item.append(opciones);
+    const item = el("div", null, "kds-item");
+    item.append(el("strong", `${prod.cantidad} × ${prod.nombre}`));
+    mostrarPersonalizacion(item, prod);
+    if (Array.isArray(prod.componentesCombo) && prod.componentesCombo.length) {
+      const grupo = el("div", null, "kds-combo-componentes");
+      grupo.append(el("div", `Contenido por combo (repetir ${prod.cantidad} ×):`, "kds-combo-nota"));
+      for (const c of prod.componentesCombo) {
+        const bloque = el("div", null, "kds-combo-componente");
+        bloque.append(el("strong", `1 × ${c.nombre} · unidad ${c.unidad}`));
+        mostrarPersonalizacion(bloque, c);
+        grupo.append(bloque);
+      }
+      item.append(grupo);
     }
-
-    // Mostrar ingredientes retirados
-    if (prod.ingredientesQuitados?.length) {
-
-        item.append(
-            el(
-                'div',
-                'SIN ' +
-                prod.ingredientesQuitados.join(', ').toUpperCase(),
-                'kds-sin'
-            )
-        );
-    }
-
     a.append(item);
-}
+  }
   const pagado = ["efectivo", "transferencia"].includes(p.metodo_pago);
+  if (!cocina) {
+    const descuento = Number(p.descuento_centavos);
+    const porcentaje = Number(p.cupon_porcentaje);
+    const totalCentavos = Math.round(Number(p.total) * 100);
+    if (p.cupon_codigo && [5, 10].includes(porcentaje) &&
+        Number.isSafeInteger(descuento) && descuento >= 0 &&
+        Number.isSafeInteger(totalCentavos)) {
+      const desglose = el("div", null, "kds-cupon");
+      desglose.style.marginTop = "10px";
+      const detalle = el("p", `🎟️ Cupón ${p.cupon_codigo} (${porcentaje}%)`);
+      const ahorro = el("p", `Descuento: −${moneda.format(descuento / 100)} MXN`);
+      detalle.style.color = ahorro.style.color = "#4ade80";
+      desglose.append(
+        el("p", `Subtotal: ${moneda.format((totalCentavos + descuento) / 100)} MXN`),
+        detalle, ahorro
+      );
+      a.append(desglose);
+    }
+  }
   if (!cocina)
     a.append(
       el("p", `Total: ${moneda.format(p.total)} MXN`, "kds-total"),

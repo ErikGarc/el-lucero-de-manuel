@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="css/estilos.css">
 </head>
 <body>
-    <main class="pagina-pedidos" hidden>
+    <main class="pagina-pedidos" id="pagina-menu-admin" hidden>
         <header class="encabezado-pedidos">
             <img src="assets/imagenes/logo.png" alt="El Lucero de Manuel" class="logo-pedidos">
             <h1>Administración del menú</h1>
@@ -15,7 +15,12 @@
             <a href="admin.html" class="volver-admin">← Volver al panel</a>
         </header>
         <section class="contenedor-pedidos">
-            <h2>Productos registrados</h2>
+            <nav class="menu-admin-tabs" aria-label="Secciones del menú">
+                <button type="button" data-seccion="productos" aria-pressed="true">🍔 Productos</button>
+                <button type="button" data-seccion="categorias" aria-pressed="false">📂 Categorías</button>
+                <button type="button" data-seccion="combos" aria-pressed="false">🍔🍟 Combos</button>
+            </nav>
+            <h2 id="titulo-seccion">Productos registrados</h2>
             <p id="mensaje-productos" role="status">Consultando productos...</p>
             <button type="button" id="btn-agregar-producto" class="boton-modulo" disabled>+ Agregar producto</button>
             <section id="formulario-producto" hidden>
@@ -28,6 +33,15 @@
                     <label for="precio-producto">Precio (MXN)</label>
                     <input type="number" id="precio-producto" min="0.01" max="10000" step="0.01" required>
                     <label><input type="checkbox" id="disponible-producto" checked> Producto disponible</label>
+                    <label for="categoria-producto">Categoría</label>
+                    <select id="categoria-producto" required></select>
+                    <div id="campos-combo" hidden>
+                        <h3>Componentes del combo</h3>
+                        <p>El precio es fijo. La cantidad indica cuántas veces se incluye el producto.</p>
+                        <div id="lista-componentes"></div>
+                        <button type="button" id="agregar-componente">+ Agregar componente</button>
+                    </div>
+                    <div id="campos-simples">
                     <h3>Configuración de opciones</h3>
                     <p>Usa 0 y 0 si el producto no tiene opciones seleccionables.</p>
                     <label for="opciones-minimas">Mínimo de opciones por orden</label>
@@ -38,8 +52,20 @@
                     <p>Marca «Es una opción seleccionable» para sabores o bebidas.</p>
                     <div id="lista-ingredientes"></div>
                     <button type="button" id="btn-agregar-ingrediente">+ Agregar ingrediente u opción</button>
+                    </div>
                     <button type="submit" id="btn-guardar-producto">Guardar producto</button>
                     <button type="button" id="btn-cancelar-producto">Cancelar</button>
+                </form>
+            </section>
+            <section id="editor-categoria" hidden>
+                <form id="form-categoria">
+                    <h3>Configurar categoría</h3>
+                    <label>Nombre <input id="nombre-categoria" required maxlength="80"></label>
+                    <label>Icono <input id="icono-categoria" maxlength="32" value="🍽️"></label>
+                    <label>Orden <input id="orden-categoria" type="number" min="0" max="10000" step="1" required></label>
+                    <label><input id="disponible-categoria" type="checkbox" checked> Disponible</label>
+                    <button class="boton-modulo" type="submit">Guardar categoría</button>
+                    <button class="boton-modulo" type="button" id="cancelar-categoria">Cancelar</button>
                 </form>
             </section>
             <div id="lista-productos"></div>
